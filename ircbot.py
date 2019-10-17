@@ -122,6 +122,7 @@ class IRCBot:
         
     def greet(self):
         '''Choose a greeting from the self.GREETINGS list, and message the channel'''
+        time.sleep(random.random()*0.5)
         self.send_msg(random.choice(self.GREETINGS))
 
 
