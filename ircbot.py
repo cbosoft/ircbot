@@ -1,4 +1,7 @@
- #!/usr/bin/python3
+#!/usr/bin/env python3
+
+
+
 
 import datetime
 import socket
@@ -7,7 +10,14 @@ import ssl
 import re
 import random
 import sys
+import subprocess as sp
 
+
+def runsh(command):
+    pr = sp.Popen(command, shell=True, stdout=sp.PIPE)
+    rv = pr.wait()
+    stdout = pr.stdout.read().decode()
+    return stdout
 
 
 def send_command(server, command):
@@ -63,9 +73,13 @@ def handle_message(server, s, **kwargs):
         handle_botcommand(server, botcommand, **kwargs)
 
 def handle_botcommand(server, c, **kwargs):
-    print(c)
-    if c.strip() in ['hi', 'hello', 'hey']:
+    c = c.strip()
+    if c in ['hi', 'hello', 'hey']:
         send_message(server, random.choice(greetings), **kwargs)
+    elif c == 'fortune':
+        fortune = runsh('fortune news')
+        for line in fortune.split('\n'):
+            send_message(server, line.replace('\t', '  '), **kwargs)
 
 
 
@@ -93,7 +107,7 @@ context.load_verify_locations('/home/chris/.irssi/server.cert.pem')
 inputs = {
     'host'   : '130.159.42.114',
     'nick'     : 'bot',
-    'channel'  : '#testing',
+    'channel'  : '#general',
     'port'     : 6697
 }
 
