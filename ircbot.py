@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-
-
-
 import datetime
 import socket
 import time
@@ -12,149 +9,161 @@ import random
 import sys
 import subprocess as sp
 
+class IRCBot:
 
-def runsh(command):
-    pr = sp.Popen(command, shell=True, stdout=sp.PIPE)
-    rv = pr.wait()
-    stdout = pr.stdout.read().decode()
-    return stdout
+    ERROR_RE = re.compile(r'^ERROR.*')
+    PING_RE = re.compile(r'^PING.*')
+    ENDMOTD_RE = re.compile(r'.*:End of /MOTD.*')
+    ENDJOIN_RE = re.compile(r'.*:End of /NAMES.*')
+    BOTCMD_re = r'^.*{channel}.*:!(.*)|^.*{channel}.*:.*([Cc]offee).*'
 
+    GREETINGS = [
+        'IT\'s YA BOI; BOT',
+        'HOLLA',
+        'HI',
+        'HELLO HUMAN',
+        'WHAT ARE THE HAPPY HAPS?'
+    ]
 
-def send_command(server, command):
-    bc = f'{command}\n'.encode()
-    print(bc)
-    server.send(bc)
+    def __init__(self, *, nick='CPE_Bot', port=None, host=None):
+        self.nick = nick
+        self.port = port
+        self.host = host
+        self.sock = 0
+        self.channel = None
 
-def get_server(contect, *, nick, port, host, **kwargs):
-    server = context.wrap_socket(socket.socket(socket.AF_INET, socket.SOCK_STREAM), server_hostname=host)
-    server.connect((host, port))
-    send_command(server, f'NICK {nick}\n')
-    send_command(server, f'USER {nick} 0 * :bot\n')
-
-    while True:
-        s = server.recv(2048)
-        print(s)
-        s = s.decode().strip('\n\r')
-        handle_message(server, s, **kwargs)
-        if ENDMOTD_RE.match(s):
-            break
-
-    print('BOT HAS CONNECTED')
-    return server
-
-
-def join_channel(server, *, channel, **kwargs):
-    send_command(server, f'JOIN {channel}\n')
-
-    s = 'notblank'
-    while True:
-        s = server.recv(2048)
-        print(s)
-        s = s.decode().strip('\n\r')
-        handle_message(server, s, channel=channel, **kwargs)
-        if ENDJOIN_RE.match(s):
-            break
-    print(f'BOT HAS JOINED CHANNEL {channel}')
+        
+    def __repr__(self):
+        return f'IRCBot(nick={self.nick}, port={self.port}, host={self.host})'
 
     
-def send_message(server, message, channel, **kwargs):
+    def connect(self):
+        print(f'{self} IS CONNECTING...')
+        self.sslcontext = ssl.SSLContext()
+        self.sslcontext.load_verify_locations('/home/chris/.irssi/server.cert.pem')
+        self.sock = self.sslcontext.wrap_socket(socket.socket(socket.AF_INET, socket.SOCK_STREAM), server_hostname=self.host)
+        self.sock.connect((self.host, self.port))
+        self.send_cmd(f'NICK {self.nick}\n')
+        self.send_cmd(f'USER {self.nick} 0 * :bot\n')
 
-    if isinstance(message, list):
-        for line in message:
-            send_message(server, line, channel)
-        return
+        while True:
+            s = self.sock.recv(2048)
+            s = s.decode().strip('\n\r')
+            self.handle_message(s)
+            if self.ENDMOTD_RE.match(s):
+                break
+            
+        print(f'{self} HAS CONNECTED')
+
+    def get_props(self):
+        rv = dict()
+        rv['channel'] = self.channel
+        rv['host'] = self.host
+        rv['port'] = self.port
+        return rv
+
+
+    def join_channel(self, channel):
+        print(f'{self} IS JOINING CHANNEL {channel}...')
+        self.channel = channel
+        self.send_cmd(f'JOIN {channel}\n')
+
+        s = 'notblank'
+        while True:
+            s = self.sock.recv(2048)
+            s = s.decode().strip('\n\r')
+            self.handle_message(s)
+            if self.ENDJOIN_RE.match(s):
+                break
+            
+        print(f'BOT HAS JOINED CHANNEL {channel}')
+        self.greet()
+
+        
+    def send_cmd(self, command):
+        '''Send command to server'''
+        
+        if command[-1] != '\n':
+            command += '\n'
+        self.sock.send(command.encode())
+
+        
+    def send_msg(self, msg, to=None):
+        '''Send message to server; send sequentially if message is a list'''
+        
+        if to is None:
+            to = self.channel
+
+        print(f'{self} IS SENDING A MESSAGE TO {to}: \'{msg}\'')
+
+        if isinstance(msg, list):
+            for line in msg:
+                self.send_msg(line, to)
+            return
+        
+        self.send_cmd(f'PRIVMSG {to} {msg}')
+
+        
+    def greet(self):
+        '''Choose a greeting from the self.GREETINGS list, and message the channel'''
+        self.send_msg(random.choice(self.GREETINGS))
+
+
+    def handle_message(self, s):
+        '''
+        In running the bot, input is monitored from users for a command or
+        keyword. 
+        '''
+        
+        if self.ERROR_RE.match(s):
+            raise Exception(f'Something went wrong:\n{s}')
+        
+        if self.PING_RE.match(s):
+            self.send_cmd(s.replace('PING', 'PONG'))
+            return
+
+        m = re.match(self.BOTCMD_re.format(**self.get_props()), s)
+        if m:
+            group = [g for g in m.groups() if g][0]
+            botcommand = group.strip()
+            self.handle_botcommand(botcommand)
+
+            
+    def handle_botcommand(self, c):
+        if c in ['hi', 'hello', 'hey']:
+            self.greet()
+        elif c == 'fortune':
+            fortune = runsh('fortune news')
+            fortune = fortune.replace('\t', '  ').split('\n')
+            self.send_msg(fortune)
+        elif c == 'help':
+            message = [
+                'HELP HUMAN? OK.',
+                'Commands:',
+                '\'!hello\' -- bot responds with greeting',
+                '\'!fortune\' -- bot will respond with a message/quote',
+                '\'!help\' -- show this help'
+            ]
+            self.send_msg(server, message, **kwargs)
+        elif c.lower() == 'coffee':
+            self.send_msg(server, 'COFFEE!', **kwargs)
+
+    def run(self):
+        buf = str()
+        while True:
+            try:
+                buf += self.sock.recv(2048).decode('utf-8')
+            except UnicodeDecodeError:
+                continue
     
-    command = f'PRIVMSG {channel} {message}'
-    send_command(server, command)
-
+            lines = buf.split('\n')
+            buf = lines.pop()
     
-def handle_message(server, s, **kwargs):
-    print(kwargs)
-    if ERROR_RE.match(s):
-        raise Exception(f'Something went wrong:\n{s}')
-    elif PING_RE.match(s):
-        send_command(server, s.replace('PING', 'PONG'))
-    elif re.match(BOTCMD_re.format(**kwargs), s):
-        m = re.match(BOTCMD_re.format(**kwargs), s)
-        group = [g for g in m.groups() if g][0]
-        botcommand = group.strip()
-        handle_botcommand(server, botcommand, **kwargs)
+            for line in lines:
+                self.handle_message(line)
 
-def handle_botcommand(server, c, **kwargs):
-    if c in ['hi', 'hello', 'hey']:
-        send_message(server, random.choice(greetings), **kwargs)
-    elif c == 'fortune':
-        fortune = runsh('fortune news')
-        fortune = fortune.replace('\t', '  ').split('\n')
-        send_message(server, fortune, **kwargs)
-    elif c == 'help':
-        message = [
-            'HELP HUMAN? OK.',
-            'Commands:',
-            '\'!hello\' -- bot responds with greeting',
-            '\'!fortune\' -- bot will respond with a message/quote',
-            '\'!help\' -- show this help'
-        ]
-        send_message(server, message, **kwargs)
-    elif c in ['coffee', 'Coffee']:
-        send_message(server, 'COFFEE!', **kwargs)
-
-
-
-
-
-
-
-
-
-
-
-
-
-ERROR_RE = re.compile(r'^ERROR.*')
-PING_RE = re.compile(r'^PING.*')
-ENDMOTD_RE = re.compile(r'.*:End of /MOTD.*')
-ENDJOIN_RE = re.compile(r'.*:End of /NAMES.*')
-BOTCMD_re = r'^.*{channel}.*:!(.*)|^.*{channel}.*:.*([Cc]offee).*'
-
-
-context = ssl.SSLContext()
-context.load_verify_locations('/home/chris/.irssi/server.cert.pem')
-
-
-    
-inputs = {
-    'host'   : '130.159.42.114',
-    'nick'     : 'bot',
-    'channel'  : '#general',
-    'port'     : 6697
-}
-
-if '--testing' in sys.argv:
-    inputs['channel'] = '#testing'
-
-greetings = [
-    'IT\'s YA BOI; BOT',
-    'HOLLA',
-    'HI',
-    'HELLO HUMAN',
-    'WHAT ARE THE HAPPY HAPS?'
-]
-
-server = get_server(context, **inputs)
-join_channel(server, **inputs)
-
-send_message(server, random.choice(greetings), **inputs)
-buf = str()
-while True:
-    
-    try:
-        buf += server.recv(2048).decode('utf-8')
-    except UnicodeDecodeError:
-        continue
-    
-    lines = buf.split('\n')
-    buf = lines.pop()
-    
-    for line in lines:
-        handle_message(server, line, **inputs)
+            
+bot = IRCBot(host='130.159.42.114', port=6697)
+bot.connect()
+bot.join_channel('#general' if '--testing' not in sys.argv else '#testing')
+bot.run()
