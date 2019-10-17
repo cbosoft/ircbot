@@ -9,6 +9,12 @@ import random
 import sys
 import subprocess as sp
 
+def runsh(command):
+    pr = sp.Popen(command, shell=True, stdout=sp.PIPE)
+    pr.wait()
+    stdout = pr.stdout.read().decode()
+    return stdout
+
 class IRCBot:
 
     ERROR_RE = re.compile(r'^ERROR.*')
@@ -144,9 +150,9 @@ class IRCBot:
                 '\'!fortune\' -- bot will respond with a message/quote',
                 '\'!help\' -- show this help'
             ]
-            self.send_msg(server, message, **kwargs)
+            self.send_msg(message)
         elif c.lower() == 'coffee':
-            self.send_msg(server, 'COFFEE!', **kwargs)
+            self.send_msg('COFFEE!')
 
     def run(self):
         buf = str()
