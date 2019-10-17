@@ -58,6 +58,12 @@ def join_channel(server, *, channel, **kwargs):
 
     
 def send_message(server, message, channel, **kwargs):
+
+    if isinstance(message, list):
+        for line in message:
+            send_message(server, line, channel)
+        return
+    
     command = f'PRIVMSG {channel} {message}'
     send_command(server, command)
 
@@ -69,17 +75,29 @@ def handle_message(server, s, **kwargs):
     elif PING_RE.match(s):
         send_command(server, s.replace('PING', 'PONG'))
     elif re.match(BOTCMD_re.format(**kwargs), s):
-        botcommand = s.split(':!', 1)[1]
+        m = re.match(BOTCMD_re.format(**kwargs), s)
+        group = [g for g in m.groups() if g][0]
+        botcommand = group.strip()
         handle_botcommand(server, botcommand, **kwargs)
 
 def handle_botcommand(server, c, **kwargs):
-    c = c.strip()
     if c in ['hi', 'hello', 'hey']:
         send_message(server, random.choice(greetings), **kwargs)
     elif c == 'fortune':
         fortune = runsh('fortune news')
-        for line in fortune.split('\n'):
-            send_message(server, line.replace('\t', '  '), **kwargs)
+        fortune = fortune.replace('\t', '  ').split('\n')
+        send_message(server, fortune, **kwargs)
+    elif c == 'help':
+        message = [
+            'HELP HUMAN? OK.',
+            'Commands:',
+            '\'!hello\' -- bot responds with greeting',
+            '\'!fortune\' -- bot will respond with a message/quote',
+            '\'!help\' -- show this help'
+        ]
+        send_message(server, message, **kwargs)
+    elif c in ['coffee', 'Coffee']:
+        send_message(server, 'COFFEE!', **kwargs)
 
 
 
@@ -97,7 +115,8 @@ ERROR_RE = re.compile(r'^ERROR.*')
 PING_RE = re.compile(r'^PING.*')
 ENDMOTD_RE = re.compile(r'.*:End of /MOTD.*')
 ENDJOIN_RE = re.compile(r'.*:End of /NAMES.*')
-BOTCMD_re = r'.* {channel}.*:!.*'
+BOTCMD_re = r'^.*{channel}.*:!(.*)|^.*{channel}.*:.*([Cc]offee).*'
+
 
 context = ssl.SSLContext()
 context.load_verify_locations('/home/chris/.irssi/server.cert.pem')
