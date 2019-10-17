@@ -31,6 +31,16 @@ class IRCBot:
         'WHAT ARE THE HAPPY HAPS?'
     ]
 
+    CHASTISATIONS = [
+        'SILLY HUMAN, WHAT ARE YOU EVEN.',
+        'WHAT?!',
+        'HAHAHA- OH. NO I DON\'T KNOW WHAT YOU SAID, I JUST ASSUMED YOU WERE JOKING.',
+        'I DID NOT GET THAT.',
+        'SYNTAX ERROR -- ERROR -- MALFUNCTION-\\$#@[]!!'
+    ]
+
+    SOURCE = 'https://github.com/cbosoft/ircbot'
+
     def __init__(self, *, nick='CPE_Bot', port=None, host=None):
         self.nick = nick
         self.port = port
@@ -82,7 +92,7 @@ class IRCBot:
             if self.ENDJOIN_RE.match(s):
                 break
             
-        print(f'BOT HAS JOINED CHANNEL {channel}')
+        print(f'{self} HAS JOINED CHANNEL {channel}')
         self.greet()
 
         
@@ -115,6 +125,11 @@ class IRCBot:
         self.send_msg(random.choice(self.GREETINGS))
 
 
+    def chastise(self):
+        '''Chastise the user for wrong-doing'''
+        self.send_msg(random.choice(self.CHASTISATIONS))
+
+
     def handle_message(self, s):
         '''
         In running the bot, input is monitored from users for a command or
@@ -142,17 +157,26 @@ class IRCBot:
             fortune = runsh('fortune news')
             fortune = fortune.replace('\t', '  ').split('\n')
             self.send_msg(fortune)
+        elif c == 'about':
+            about = [
+                '<!-- ircbot -->', 
+                f'see github for source: {self.SOURCE}'
+            ]
+            self.send_msg(about)
         elif c == 'help':
             message = [
                 'HELP HUMAN? OK.',
                 'Commands:',
-                '\'!hello\' -- bot responds with greeting',
+                '\'!hello\' -- bot will respond with greeting',
                 '\'!fortune\' -- bot will respond with a message/quote',
+                '\'!about\' -- bot will give some meta info about itself',
                 '\'!help\' -- show this help'
             ]
             self.send_msg(message)
         elif c.lower() == 'coffee':
             self.send_msg('COFFEE!')
+        else:
+            self.chastise()
 
     def run(self):
         buf = str()
