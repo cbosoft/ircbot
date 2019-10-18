@@ -30,16 +30,17 @@ class IRCBot:
     OPERCERT = '.operator.cert'
     PHRASE_BOOK_DIR = './phrase_book'
 
-    def __init__(self, *, nick='CPE_Bot', port=None, host=None):
     phrase_book = dict()
     esteem = defaultdict(int)
+
+    def __init__(self, *, nick='CPE_Bot', port=None, host=None, server_cert_location=None):
         self.nick = nick
         self.port = port
         self.host = host
+        self.server_cert_location = server_cert_location
         self.sock = 0
         self.channel = None
 
-        
         if os.path.isfile(self.OPERCERT):
             with open(self.OPERCERT) as opcert:
                 self.operator_cert = json.load(opcert)
@@ -60,12 +61,19 @@ class IRCBot:
     def __repr__(self):
         return f'IRCBot(nick={self.nick}, port={self.port}, host={self.host})'
 
-    
+
     def connect(self):
+        '''Connect to IRC server'''
         print(f'{self} IS CONNECTING...')
-        self.sslcontext = ssl.SSLContext()
-        self.sslcontext.load_verify_locations('/home/chris/.irssi/server.cert.pem')
-        self.sock = self.sslcontext.wrap_socket(socket.socket(socket.AF_INET, socket.SOCK_STREAM), server_hostname=self.host)
+
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        if self.server_cert_location:
+            print(f'{self} USING SSL')
+            self.sslcontext = ssl.SSLContext()
+            self.sslcontext.load_verify_locations(self.server_cert_location)
+            self.sock = self.sslcontext.wrap_socket(self.sock, server_hostname=self.host)
+
         self.sock.connect((self.host, self.port))
         self.send_cmd(f'NICK {self.nick}\n')
         self.send_cmd(f'USER {self.nick} 0 * :bot\n')
@@ -179,7 +187,7 @@ class IRCBot:
         if m:
             group = [g for g in m.groups() if g][0]
             botcommand = group.strip()
-            self.handle_botcommand(botcommand)
+            self.handle_botcommand(botcommand, 'noone')
 
             
     def handle_botcommand(self, c):
