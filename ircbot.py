@@ -234,6 +234,7 @@ class IRCBot:
         elif command.lower() == 'goodbooks':
             self.show_goodbooksbadbooks()
         else:
+            self.dislike_user(from_nick)
             self.chastise()
 
     def log(self, message):
