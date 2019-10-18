@@ -163,45 +163,56 @@ class IRCBot:
     def kick(self, nick):
         '''Kick someone from server'''
         self.send_cmd(f'KICK {nick}')
-        
-    def command_go_afk(self, nick):
+
+
+    def set_nick_afk(self, nick):
+        '''Set nick as being away, log time this happened'''
         t = datetime.datetime.now().strftime("%m-%d, %H:%M:%S")
-        self.afk_users[nick] = {'timestamp':t,
-                                'messages':[]}
-        self.send_message(f'{nick} is now AFK.')
+        self.afk_users[nick] = {
+                'timestamp':t,
+                'messages':[]
+            }
+        self.send_msg(f'{nick} is now AFK.')
         
-    def return_from_afk(self,nick):
+
+
+    def return_from_afk(self, nick):
+        '''Unset nick as AFK: read out missed messages'''
+
         s = f'Welcome back {nick}, while you were away '
-        # here is where the walrus operator would be good
-        # if n_msg := len(afk_users[nick]['messages']:
-        if afk_users[nick]['messages']:
-            n_msg = len(afk_users[nick]['messages'])
+
+        # TODO walrus-ify when 3.8 is in arch repo
+        if self.afk_users[nick]['messages']:
+            n_msg = len(self.afk_users[nick]['messages'])
             s += f'you received {n_msg} messages:'
-            self.send_message(s)
-            for m in afk_users[nick]['messages']:
-                self.send_message(m)
+            self.send_msg(s, to=nick)
+            for m in self.afk_users[nick]['messages']:
+                self.send_msg(m, to=nick)
         else :
             s += f'nobody messaged you, feels bad :('
-            self.send_message(s)
+            self.send_msg(s, to=nick)
+
         del self.afk_users[nick]
-        
-    def check_afk(self,nick):
+
+
+    def check_afk(self, from_nick, to_nick, message):
         '''
         User can say he/she is AFK, when someone tags a user bot checks
         whether or not user is AFK (in dict). If True then saves message
         for when user returns
         '''
-        for afk_u in afk_users:
-            if f'@{afk_u}' in message_string:
-                # f strings don't work with \ break in the line
-                msg = '@{}, {} has been AFK since {}. I will tell him'\
-                      'your message when he returns.'.format(
-                          user_from, afk_u, afk_users[afk_u]['timestamp'])
-                self.send_msg(msg)
-                t = datetime.datetime.now().strftime("%m-%d, %H:%M:%S")
-                savemsg = f'{t} {user_from}: {message_string}'
-                self.afk_users[afk_u]['messages'].append(savemsg)
-    
+
+        if to_nick not in self.afk_users:
+            return
+
+        msg = f'@{from_nick.upper()}, {to_nick.upper()} HAS BEEN AFK SINCE {self.afk_users[to_nick]["timestamp"]}.'
+        msg += 'I WILL RELAY YOUR MESSAGE WHEN THEY RETURN.'
+        self.send_msg(msg)
+        t = datetime.datetime.now().strftime("%m-%d, %H:%M:%S")
+        savemsg = f'{t} {from_nick}: {message}'
+        self.afk_users[to_nick]['messages'].append(savemsg)
+
+
     def like_user(self, nick):
         self.esteem[nick] += 1
 
@@ -275,12 +286,13 @@ class IRCBot:
             self.send_msg(about)
         elif command == 'help':
             message = [
-                'HELP HUMAN? OK.',
+                'HELP HUMAN? OK:',
                 'Commands:',
                 '\'!hello\' -- bot will respond with greeting',
                 '\'!fortune\' -- bot will respond with a message/quote',
                 '\'!about\' -- bot will give some meta info about itself',
                 '\'!goodbooks\' -- bot will tell you how it feels about users it has interacted with',
+                '\'!afk\' -- tell bot you\'re going AFK',
                 '\'!help\' -- show this help'
             ]
             self.send_msg(message)
@@ -293,7 +305,7 @@ class IRCBot:
         elif command.lower() == 'goodbooks':
             self.show_goodbooksbadbooks()
         elif command.lower() == 'afk':
-            self.command_go_afk(from_nick)
+            self.set_nick_afk(from_nick)
         else:
             self.dislike_user(from_nick)
             self.chastise()
