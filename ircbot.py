@@ -8,6 +8,7 @@ import re
 import random
 import sys
 import subprocess as sp
+from collections import defaultdict
 
 def runsh(command):
     pr = sp.Popen(command, shell=True, stdout=sp.PIPE)
@@ -28,6 +29,7 @@ class IRCBot:
 
     def __init__(self, *, nick='CPE_Bot', port=None, host=None):
     phrase_book = dict()
+    esteem = defaultdict(int)
         self.nick = nick
         self.port = port
         self.host = host
@@ -137,6 +139,15 @@ class IRCBot:
     def kick(self, nick):
         '''Kick someone from server'''
         self.send_cmd(f'KICK {nick}')
+
+
+    def like_user(self, nick):
+        self.esteem[nick] += 1
+
+
+    def dislike_user(self, nick):
+        self.esteem[nick] -= 1
+
 
     def handle_message(self, s):
         '''
