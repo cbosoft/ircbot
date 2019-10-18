@@ -24,7 +24,7 @@ class IRCBot:
     PING_RE = re.compile(r'^PING.*')
     ENDMOTD_RE = re.compile(r'.*:End of /MOTD.*')
     ENDJOIN_RE = re.compile(r'.*:End of /NAMES.*')
-    BOTCMD_re = r'^.*{channel}.*:!(.*)|^.*{channel}.*:.*([Cc]offee).*'
+    BOTCMD_re = r'^(.*{channel}.*):!(.*)|^(.*{channel}.*):.*([Cc][Oo][Ff][Ff][Ee][Ee]).*|^(.*{channel}.*):.*([Tt][Ee][Aa]).*'
 
     SOURCE = 'https://github.com/cbosoft/ircbot'
     OPERCERT = '.operator.cert'
@@ -185,9 +185,10 @@ class IRCBot:
 
         m = re.match(self.BOTCMD_re.format(**self.get_props()), s)
         if m:
-            group = [g for g in m.groups() if g][0]
-            botcommand = group.strip()
-            self.handle_botcommand(botcommand, 'noone')
+            groups = m.groups()
+            bot_command = [g for g in groups[1::2] if g][0].strip()
+            from_nick = [g for g in groups[::2] if g][0].strip()
+            self.handle_botcommand(bot_command, from_nick)
 
 
     def handle_botcommand(self, command, from_nick):
@@ -218,7 +219,7 @@ class IRCBot:
             self.send_msg(random.choice(self.phrase_book['coffee']))
         elif command.lower() == 'tea':
             self.dislike_user(from_nick)
-            self.send_msg(random.choice(self.phrase_book['tea']))
+            self.send_phrase('tea')
         else:
             self.chastise()
 
