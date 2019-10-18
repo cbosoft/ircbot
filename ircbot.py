@@ -145,7 +145,7 @@ class IRCBot:
 
         self.send_msg(random.choice(self.phrase_book[phrase_type]))
 
-        
+
     def greet(self):
         '''Choose a greeting from the self.GREETINGS list, and message the channel'''
         time.sleep(random.random()*0.5)
@@ -175,6 +175,8 @@ class IRCBot:
         In running the bot, input is monitored from users for a command or
         keyword. 
         '''
+
+        print(s)
         
         if self.ERROR_RE.match(s):
             raise Exception(f'Something went wrong:\n{s}')
