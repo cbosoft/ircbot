@@ -8,6 +8,8 @@ import re
 import random
 import sys
 import subprocess as sp
+import os
+import json
 from collections import defaultdict
 
 def runsh(command):
@@ -25,6 +27,7 @@ class IRCBot:
     BOTCMD_re = r'^.*{channel}.*:!(.*)|^.*{channel}.*:.*([Cc]offee).*'
 
     SOURCE = 'https://github.com/cbosoft/ircbot'
+    OPERCERT = '.operator.cert'
     PHRASE_BOOK_DIR = './phrase_book'
 
     def __init__(self, *, nick='CPE_Bot', port=None, host=None):
@@ -37,6 +40,12 @@ class IRCBot:
         self.channel = None
 
         
+        if os.path.isfile(self.OPERCERT):
+            with open(self.OPERCERT) as opcert:
+                self.operator_cert = json.load(opcert)
+        else:
+            self.operator_cert = None
+
         if os.path.isdir(self.PHRASE_BOOK_DIR):
             phrase_files = os.listdir(self.PHRASE_BOOK_DIR)
             for phrase_file in phrase_files:
@@ -69,6 +78,10 @@ class IRCBot:
                 break
             
         print(f'{self} HAS CONNECTED')
+
+        if self.operator_cert:
+            self.send_cmd(f"OPER {self.operator_cert['username']} {self.operator_cert['password']}")
+
 
     def get_props(self):
         rv = dict()
