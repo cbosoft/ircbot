@@ -193,6 +193,12 @@ class IRCBot:
             self.handle_botcommand(bot_command, from_nick)
 
 
+    def show_goodbooksbadbooks(self):
+        for user, level in self.esteem.items():
+            est = 'LIKE' if level > 0 else 'FEEL NEUTRALLY TOWARD' if level == 0 else 'DISLIKE'
+            self.send_msg(f'I {est} {user.upper()} ({level})')
+
+
     def handle_botcommand(self, command, from_nick):
         if command in ['hi', 'hello', 'hey']:
             self.greet()
@@ -212,6 +218,7 @@ class IRCBot:
                 '\'!hello\' -- bot will respond with greeting',
                 '\'!fortune\' -- bot will respond with a message/quote',
                 '\'!about\' -- bot will give some meta info about itself',
+                '\'!goodbooks\' -- bot will tell you how it feels about users it has interacted with',
                 '\'!help\' -- show this help'
             ]
             self.send_msg(message)
@@ -221,6 +228,8 @@ class IRCBot:
         elif command.lower() == 'tea':
             self.dislike_user(from_nick)
             self.send_phrase('tea')
+        elif command.lower() == 'goodbooks':
+            self.show_goodbooksbadbooks()
         else:
             self.chastise()
 
