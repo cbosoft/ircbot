@@ -24,7 +24,8 @@ class IRCBot:
     PING_RE = re.compile(r'^PING.*')
     ENDMOTD_RE = re.compile(r'.*:End of /MOTD.*')
     ENDJOIN_RE = re.compile(r'.*:End of /NAMES.*')
-    BOTCMD_re = r'^:(.*)!.*{channel}.*:!(.*)|^:(.*)!.*{channel}.*:.*([Cc][Oo][Ff][Ff][Ee][Ee]).*|^:(.*)!.*{channel}.*:.*([Tt][Ee][Aa]).*'
+    MESSAGE_RE = re.compile(r'^:(.*)!.*:(.*)')
+    TAGGED_RE = re.compile(r'.*@([!\w]*).*')
 
     SOURCE = 'https://github.com/cbosoft/ircbot'
     OPERCERT = '.operator.cert'
@@ -214,6 +215,8 @@ class IRCBot:
         keyword. 
         '''
 
+        s = s.strip()
+
         print(s)
         
         if self.ERROR_RE.match(s):
@@ -222,24 +225,32 @@ class IRCBot:
         if self.PING_RE.match(s):
             self.send_cmd(s.replace('PING', 'PONG'))
             return
+        
+        mobj = self.MESSAGE_RE.match(s)
 
-        m = re.match(self.BOTCMD_re.format(**self.get_props()), s)
-        # messy workaround, chris may be able to tidy up
-        message_string = "however you read a non-command string"
-        user_from = "however you get the user who sent message"
-        if m:
-            groups = m.groups()
-            bot_command = [g for g in groups[1::2] if g][0].strip()
-            from_nick = [g for g in groups[::2] if g][0].strip()
-            self.handle_botcommand(bot_command, from_nick)
-            
-        elif '@' in message_string:
-            check_afk(user_from, message_string)
-            
-        else:
-            if user_from in afk_users:
-                return_from_afk(user_from)
-                
+        if not mobj:
+            return
+
+        from_nick, message = mobj.groups()
+
+        print(f'{self} RECEIVED MESSAGE: {message} FROM {from_nick}')
+
+        if message.startswith('!'):
+            self.handle_botcommand(message[1:], from_nick)
+
+        for keyword in self.KEYWORDS:
+            if keyword in message.lower():
+                self.handle_botcommand(keyword, from_nick)
+
+        mobj = self.TAGGED_RE.match(s)
+        if mobj:
+            to_nick = mobj.group(1)
+            self.check_afk(from_nick, to_nick, message)
+
+        if from_nick in self.afk_users and not '!afk' in message:
+            self.return_from_afk(from_nick)
+
+
     def show_goodbooksbadbooks(self):
         for user, level in self.esteem.items():
             est = 'LIKE' if level > 0 else 'FEEL NEUTRALLY TOWARD' if level == 0 else 'DISLIKE'
