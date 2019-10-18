@@ -242,7 +242,7 @@ class IRCBot:
                 self.handle_message(line)
 
             
-bot = IRCBot(host='130.159.42.114', port=6697)
+bot = IRCBot(host='130.159.42.114', port=6697, server_cert_location='/home/chris/.irssi/server.cert.pem')
 bot.connect()
 bot.join_channel('#general' if '--testing' not in sys.argv else '#testing')
 bot.run()
