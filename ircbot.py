@@ -216,7 +216,7 @@ class IRCBot:
             self.send_msg(message)
         elif command.lower() == 'coffee':
             self.like_user(from_nick)
-            self.send_msg(random.choice(self.phrase_book['coffee']))
+            self.send_phrase('coffee')
         elif command.lower() == 'tea':
             self.dislike_user(from_nick)
             self.send_phrase('tea')
