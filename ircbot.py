@@ -31,6 +31,7 @@ class IRCBot:
     PHRASE_BOOK_DIR = './phrase_book'
 
     phrase_book = dict()
+    afk_users   = dict()
     esteem = defaultdict(int)
 
     def __init__(self, *, nick='CPE_Bot', port=None, host=None, server_cert_location=None):
@@ -160,8 +161,45 @@ class IRCBot:
     def kick(self, nick):
         '''Kick someone from server'''
         self.send_cmd(f'KICK {nick}')
-
-
+        
+    def command_go_afk(self, nick):
+        t = datetime.datetime.now().strftime("%m-%d, %H:%M:%S")
+        self.afk_users[nick] = {'timestamp':t,
+                                'messages':[]}
+        self.send_message(f'{nick} is now AFK.')
+        
+    def return_from_afk(self,nick):
+        s = f'Welcome back {nick}, while you were away '
+        # here is where the walrus operator would be good
+        # if n_msg := len(afk_users[nick]['messages']:
+        if afk_users[nick]['messages']:
+            n_msg = len(afk_users[nick]['messages'])
+            s += f'you received {n_msg} messages:'
+            self.send_message(s)
+            for m in afk_users[nick]['messages']:
+                self.send_message(m)
+        else :
+            s += f'nobody messaged you, feels bad :('
+            self.send_message(s)
+        del self.afk_users[nick]
+        
+    def check_afk(self,nick):
+        '''
+        User can say he/she is AFK, when someone tags a user bot checks
+        whether or not user is AFK (in dict). If True then saves message
+        for when user returns
+        '''
+        for afk_u in afk_users:
+            if f'@{afk_u}' in message_string:
+                # f strings don't work with \ break in the line
+                msg = '@{}, {} has been AFK since {}. I will tell him'\
+                      'your message when he returns.'.format(
+                          user_from, afk_u, afk_users[afk_u]['timestamp'])
+                self.send_msg(msg)
+                t = datetime.datetime.now().strftime("%m-%d, %H:%M:%S")
+                savemsg = f'{t} {user_from}: {message_string}'
+                self.afk_users[afk_u]['messages'].append(savemsg)
+    
     def like_user(self, nick):
         self.esteem[nick] += 1
 
@@ -186,13 +224,22 @@ class IRCBot:
             return
 
         m = re.match(self.BOTCMD_re.format(**self.get_props()), s)
+        # messy workaround, chris may be able to tidy up
+        message_string = "however you read a non-command string"
+        user_from = "however you get the user who sent message"
         if m:
             groups = m.groups()
             bot_command = [g for g in groups[1::2] if g][0].strip()
             from_nick = [g for g in groups[::2] if g][0].strip()
             self.handle_botcommand(bot_command, from_nick)
-
-
+            
+        elif '@' in message_string:
+            check_afk(user_from, message_string)
+            
+        else:
+            if user_from in afk_users:
+                return_from_afk(user_from)
+                
     def show_goodbooksbadbooks(self):
         for user, level in self.esteem.items():
             est = 'LIKE' if level > 0 else 'FEEL NEUTRALLY TOWARD' if level == 0 else 'DISLIKE'
@@ -233,6 +280,8 @@ class IRCBot:
             self.send_phrase('tea')
         elif command.lower() == 'goodbooks':
             self.show_goodbooksbadbooks()
+        elif command.lower() == 'afk':
+            self.command_go_afk(from_nick)
         else:
             self.dislike_user(from_nick)
             self.chastise()
