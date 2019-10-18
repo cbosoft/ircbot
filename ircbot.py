@@ -24,7 +24,7 @@ class IRCBot:
     PING_RE = re.compile(r'^PING.*')
     ENDMOTD_RE = re.compile(r'.*:End of /MOTD.*')
     ENDJOIN_RE = re.compile(r'.*:End of /NAMES.*')
-    BOTCMD_re = r'^(.*{channel}.*):!(.*)|^(.*{channel}.*):.*([Cc][Oo][Ff][Ff][Ee][Ee]).*|^(.*{channel}.*):.*([Tt][Ee][Aa]).*'
+    BOTCMD_re = r'^:(.*)!.*{channel}.*:!(.*)|^:(.*)!.*{channel}.*:.*([Cc][Oo][Ff][Ff][Ee][Ee]).*|^:(.*)!.*{channel}.*:.*([Tt][Ee][Aa]).*'
 
     SOURCE = 'https://github.com/cbosoft/ircbot'
     OPERCERT = '.operator.cert'
