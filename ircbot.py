@@ -200,6 +200,9 @@ class IRCBot:
 
 
     def handle_botcommand(self, command, from_nick):
+
+        self.esteem[from_nick]
+
         if command in ['hi', 'hello', 'hey']:
             self.greet()
         elif command == 'fortune':
