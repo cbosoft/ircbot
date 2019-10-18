@@ -223,6 +223,9 @@ class IRCBot:
         else:
             self.chastise()
 
+    def log(self, message):
+        pass # TODO
+
     def run(self):
         buf = str()
         while True:
@@ -235,6 +238,7 @@ class IRCBot:
             buf = lines.pop()
     
             for line in lines:
+                self.log(line)
                 self.handle_message(line)
 
             
