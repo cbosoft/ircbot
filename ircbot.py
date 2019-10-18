@@ -16,7 +16,7 @@ def runsh(command):
     pr = sp.Popen(command, shell=True, stdout=sp.PIPE)
     pr.wait()
     stdout = pr.stdout.read().decode()
-    return stdout
+    return stdout.split('\n')
 
 class IRCBot:
 
@@ -195,7 +195,7 @@ class IRCBot:
             self.greet()
         elif command == 'fortune':
             fortune = runsh('fortune news')
-            fortune = fortune.replace('\t', '  ').split('\n')
+            fortune = fortune.replace('\t', '  ')
             self.send_msg(fortune)
         elif command == 'about':
             about = [
