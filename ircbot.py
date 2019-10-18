@@ -30,6 +30,7 @@ class IRCBot:
     SOURCE = 'https://github.com/cbosoft/ircbot'
     OPERCERT = '.operator.cert'
     PHRASE_BOOK_DIR = './phrase_book'
+    KEYWORDS = ['coffee', 'tea']
 
     phrase_book = dict()
     afk_users   = dict()
