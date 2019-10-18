@@ -189,21 +189,21 @@ class IRCBot:
             botcommand = group.strip()
             self.handle_botcommand(botcommand, 'noone')
 
-            
-    def handle_botcommand(self, c):
-        if c in ['hi', 'hello', 'hey']:
+
+    def handle_botcommand(self, command, from_nick):
+        if command in ['hi', 'hello', 'hey']:
             self.greet()
-        elif c == 'fortune':
+        elif command == 'fortune':
             fortune = runsh('fortune news')
             fortune = fortune.replace('\t', '  ').split('\n')
             self.send_msg(fortune)
-        elif c == 'about':
+        elif command == 'about':
             about = [
                 '<!-- ircbot -->', 
                 f'see github for source: {self.SOURCE}'
             ]
             self.send_msg(about)
-        elif c == 'help':
+        elif command == 'help':
             message = [
                 'HELP HUMAN? OK.',
                 'Commands:',
@@ -213,8 +213,12 @@ class IRCBot:
                 '\'!help\' -- show this help'
             ]
             self.send_msg(message)
-        elif c.lower() == 'coffee':
-            self.send_msg('COFFEE!')
+        elif command.lower() == 'coffee':
+            self.like_user(from_nick)
+            self.send_msg(random.choice(self.phrase_book['coffee']))
+        elif command.lower() == 'tea':
+            self.dislike_user(from_nick)
+            self.send_msg(random.choice(self.phrase_book['tea']))
         else:
             self.chastise()
 
