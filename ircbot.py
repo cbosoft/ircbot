@@ -23,25 +23,11 @@ class IRCBot:
     ENDJOIN_RE = re.compile(r'.*:End of /NAMES.*')
     BOTCMD_re = r'^.*{channel}.*:!(.*)|^.*{channel}.*:.*([Cc]offee).*'
 
-    GREETINGS = [
-        'IT\'s YA BOI; BOT',
-        'HOLLA',
-        'HI',
-        'HELLO HUMAN',
-        'WHAT ARE THE HAPPY HAPS?'
-    ]
-
-    CHASTISATIONS = [
-        'SILLY HUMAN, WHAT ARE YOU EVEN.',
-        'WHAT?!',
-        'HAHAHA- OH. NO I DON\'T KNOW WHAT YOU SAID, I JUST ASSUMED YOU WERE JOKING.',
-        'I DID NOT GET THAT.',
-        'SYNTAX ERROR -- ERROR -- MALFUNCTION-\\$#@[]!!'
-    ]
-
     SOURCE = 'https://github.com/cbosoft/ircbot'
+    PHRASE_BOOK_DIR = './phrase_book'
 
     def __init__(self, *, nick='CPE_Bot', port=None, host=None):
+    phrase_book = dict()
         self.nick = nick
         self.port = port
         self.host = host
@@ -49,6 +35,17 @@ class IRCBot:
         self.channel = None
 
         
+        if os.path.isdir(self.PHRASE_BOOK_DIR):
+            phrase_files = os.listdir(self.PHRASE_BOOK_DIR)
+            for phrase_file in phrase_files:
+                phrase_type = phrase_file.replace('.txt', '')
+                with open(f'{self.PHRASE_BOOK_DIR}/{phrase_file}') as phf:
+                    phrases = phf.readlines()
+                self.phrase_book[phrase_type] = [phrase.strip() for phrase in phrases]
+        else:
+            print(f'{self} COULD NOT FIND PHRASEBOOK {self.PHRASE_BOOK_DIR}')
+
+
     def __repr__(self):
         return f'IRCBot(nick={self.nick}, port={self.port}, host={self.host})'
 
@@ -119,17 +116,27 @@ class IRCBot:
         
         self.send_cmd(f'PRIVMSG {to} {msg}')
 
+    def send_phrase(self, phrase_type):
+        if phrase_type not in self.phrase_book:
+            return '...'
+
+        self.send_msg(random.choice(self.phrase_book[phrase_type]))
+
         
     def greet(self):
         '''Choose a greeting from the self.GREETINGS list, and message the channel'''
         time.sleep(random.random()*0.5)
-        self.send_msg(random.choice(self.GREETINGS))
+        self.send_phrase('greetings')
 
 
     def chastise(self):
         '''Chastise the user for wrong-doing'''
-        self.send_msg(random.choice(self.CHASTISATIONS))
+        self.send_phrase('chastisations')
 
+
+    def kick(self, nick):
+        '''Kick someone from server'''
+        self.send_cmd(f'KICK {nick}')
 
     def handle_message(self, s):
         '''
