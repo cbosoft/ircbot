@@ -36,13 +36,14 @@ class IRCBot:
     afk_users   = dict()
     esteem = defaultdict(int)
 
-    def __init__(self, *, nick='CPE_Bot', port=None, host=None, server_cert_location=None):
+    def __init__(self, *, nick='CPE_Bot', port=None, host=None, server_cert_location=None, logging=True):
         self.nick = nick
         self.port = port
         self.host = host
         self.server_cert_location = server_cert_location
         self.sock = 0
         self.channel = None
+        self.logging = logging
 
         if os.path.isfile(self.OPERCERT):
             with open(self.OPERCERT) as opcert:
@@ -310,8 +311,22 @@ class IRCBot:
             self.dislike_user(from_nick)
             self.chastise()
 
-    def log(self, message):
         pass # TODO
+
+
+    def get_logname(self):
+        return time.strftime('ircbot-log_%Y-%m-%d.txt')
+
+
+    def log(self, message):
+        if not self.logging:
+            return
+
+        now = time.strftime('%Y-%m-%d %H:%M:%S')
+
+        with open(self.get_logname(), 'a') as f:
+            f.write(f'{now} :: {message}\n')
+
 
     def run(self):
         buf = str()
