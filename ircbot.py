@@ -166,14 +166,15 @@ class IRCBot:
         self.send_cmd(f'KICK {nick}')
 
 
-    def set_nick_afk(self, nick):
+    def set_nick_afk(self, nick, reason):
         '''Set nick as being away, log time this happened'''
         t = datetime.datetime.now().strftime("%m-%d, %H:%M:%S")
         self.afk_users[nick] = {
-                'timestamp':t,
-                'messages':[]
+                'timestamp': t,
+                'messages' : [],
+                'reason'   : reason
             }
-        self.send_msg(f'{nick} is now AFK.')
+        self.send_msg(f'{nick} is now AFK because "{reason}".')
         
 
 
@@ -205,9 +206,12 @@ class IRCBot:
 
         if to_nick not in self.afk_users:
             return
-
-        msg = f'@{from_nick.upper()}, {to_nick.upper()} HAS BEEN AFK SINCE {self.afk_users[to_nick]["timestamp"]}.'
-        msg += 'I WILL RELAY YOUR MESSAGE WHEN THEY RETURN.'
+        
+        since = self.afk_users[to_nick]["timestamp"]
+        reason = self.afk_users[to_nick]["reason"]
+        msg = f'@{from_nick.upper()}, {to_nick.upper()} HAS BEEN AFK SINCE {since}'
+        if reason: msg += ' because {reason}'
+        msg += '. I WILL RELAY YOUR MESSAGE WHEN THEY RETURN.'
         self.send_msg(msg)
         t = datetime.datetime.now().strftime("%m-%d, %H:%M:%S")
         savemsg = f'{t} {from_nick}: {message}'
@@ -272,6 +276,11 @@ class IRCBot:
 
     def handle_botcommand(self, command, from_nick):
 
+        if ' ' in command:
+            command, rest_of_message = command.split(' ', 1)
+        else:
+            rest_of_message = None
+
         self.esteem[from_nick]
 
         if command in ['hi', 'hello', 'hey']:
@@ -293,7 +302,7 @@ class IRCBot:
                 '\'!fortune\' -- bot will respond with a message/quote',
                 '\'!about\' -- bot will give some meta info about itself',
                 '\'!goodbooks\' -- bot will tell you how it feels about users it has interacted with',
-                '\'!afk\' -- tell bot you\'re going AFK',
+                '\'!afk [<reason>]\' -- tell bot you\'re going AFK, optionally why',
                 '\'!help\' -- show this help'
             ]
             self.send_msg(message)
@@ -306,7 +315,7 @@ class IRCBot:
         elif command.lower() == 'goodbooks':
             self.show_goodbooksbadbooks()
         elif command.lower() == 'afk':
-            self.set_nick_afk(from_nick)
+            self.set_nick_afk(from_nick, reason=rest_of_message)
         else:
             self.dislike_user(from_nick)
             self.chastise()
