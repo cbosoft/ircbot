@@ -320,6 +320,12 @@ class IRCBot:
             self.dislike_user(from_nick)
             self.chastise()
 
+
+    def google(self, query):
+        pass # TODO
+
+
+    def wiki(self, query):
         pass # TODO
 
 
