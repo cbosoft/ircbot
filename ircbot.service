@@ -1,0 +1,6 @@
+[Unit]
+Description=Simple IRC bot
+Documentation=https://github.com/cbosoft/ircbot
+
+[Service]
+ExecStart=ircbot
