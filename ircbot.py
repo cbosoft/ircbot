@@ -330,7 +330,7 @@ class IRCBot:
 
 
     def get_logname(self):
-        return time.strftime('ircbot-log_%Y-%m-%d.txt')
+        return os.path.expanduser(time.strftime('~/ircbot-log_%Y-%m-%d.txt'))
 
 
     def log(self, message):
