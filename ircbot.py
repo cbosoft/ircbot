@@ -29,6 +29,7 @@ class IRCBot:
     SOURCE = 'https://github.com/cbosoft/ircbot'
     OPERCERT = '.operator.cert'
     PHRASE_BOOK_DIR = './phrase_book'
+    ESTEEM_FILE = os.path.expanduser('~/.ircbot_esteem.json')
     KEYWORDS = ['coffee', 'tea']
 
     phrase_book = dict()
@@ -59,6 +60,8 @@ class IRCBot:
                 self.phrase_book[phrase_type] = [phrase.strip() for phrase in phrases]
         else:
             print(f'{self} COULD NOT FIND PHRASEBOOK {self.PHRASE_BOOK_DIR}')
+
+        self.read_esteem()
 
 
     def __repr__(self):
@@ -92,6 +95,19 @@ class IRCBot:
 
         if self.operator_cert:
             self.send_cmd(f"OPER {self.operator_cert['username']} {self.operator_cert['password']}")
+
+    def read_esteem(self):
+        try:
+            with open(self.ESTEEM_FILE) as ef:
+                esteem = json.load(ef)
+        except:
+            esteem = dict()
+        self.esteem = defaultdict(int, **esteem)
+
+
+    def write_esteem(self):
+        with open(self.ESTEEM_FILE, 'w') as ef:
+            json.dump(dict(**self.esteem), ef)
 
 
     def get_props(self):
@@ -219,10 +235,12 @@ class IRCBot:
 
     def like_user(self, nick):
         self.esteem[nick] += 1
+        self.write_esteem()
 
 
     def dislike_user(self, nick):
         self.esteem[nick] -= 1
+        self.write_esteem()
 
 
     def handle_message(self, s):
