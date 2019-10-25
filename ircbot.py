@@ -7,17 +7,15 @@ import ssl
 import re
 import random
 import sys
-import subprocess as sp
 import os
 import json
 from collections import defaultdict
 
-def runsh(command):
-    pr = sp.Popen(command, shell=True, stdout=sp.PIPE)
-    pr.wait()
-    stdout = pr.stdout.read().decode()
-    return stdout.replace('\t', '  ').split('\n')
+from runsh import runsh
 from server_status import get_server_status
+
+
+
 
 class IRCBot:
 
