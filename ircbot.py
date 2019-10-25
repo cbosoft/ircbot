@@ -292,6 +292,8 @@ class IRCBot:
 
 
     def handle_botcommand(self, command, from_nick):
+        
+        command = command.lower()
 
         if ' ' in command:
             command, rest_of_message = command.split(' ', 1)
@@ -324,15 +326,15 @@ class IRCBot:
                 '\'!help\' -- show this help'
             ]
             self.send_msg(message)
-        elif command.lower() == 'coffee':
+        elif command == 'coffee':
             self.like_user(from_nick)
             self.send_phrase('coffee')
-        elif command.lower() == 'tea':
+        elif command == 'tea':
             self.dislike_user(from_nick)
             self.send_phrase('tea')
-        elif command.lower() == 'goodbooks':
+        elif command == 'goodbooks':
             self.show_goodbooksbadbooks()
-        elif command.lower() == 'afk':
+        elif command == 'afk':
             self.set_nick_afk(from_nick, reason=rest_of_message)
         elif command == 'server':
             self.send_server_status()
