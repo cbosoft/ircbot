@@ -17,6 +17,7 @@ def runsh(command):
     pr.wait()
     stdout = pr.stdout.read().decode()
     return stdout.replace('\t', '  ').split('\n')
+from server_status import get_server_status
 
 class IRCBot:
 
@@ -303,6 +304,7 @@ class IRCBot:
                 '\'!about\' -- bot will give some meta info about itself',
                 '\'!goodbooks\' -- bot will tell you how it feels about users it has interacted with',
                 '\'!afk [<reason>]\' -- tell bot you\'re going AFK, optionally why',
+                '\'!server\' -- check server status (CPU, RAM, processes/user)',
                 '\'!help\' -- show this help'
             ]
             self.send_msg(message)
@@ -316,6 +318,8 @@ class IRCBot:
             self.show_goodbooksbadbooks()
         elif command.lower() == 'afk':
             self.set_nick_afk(from_nick, reason=rest_of_message)
+        elif command == 'server':
+            self.send_server_status()
         else:
             self.dislike_user(from_nick)
             self.chastise()
@@ -327,6 +331,13 @@ class IRCBot:
 
     def wiki(self, query):
         pass # TODO
+
+
+    def send_server_status(self):
+        self.send_msg('OKAY HUMAN, I WILL CHECK ON MY FRIEND THE SERVER')
+        time.sleep(1)
+        self.send_msg("HERE'S WHAT SHE SAID:")
+        self.send_msg(get_server_status())
 
 
     def get_logname(self):
