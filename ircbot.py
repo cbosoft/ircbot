@@ -36,6 +36,8 @@ class IRCBot:
     afk_users   = dict()
     esteem = defaultdict(int)
 
+    cache = dict()
+
     def __init__(self, *, nick='CPE_Bot', port=None, host=None, server_cert_location=None, logging=True):
         self.nick = nick
         self.port = port
@@ -352,10 +354,19 @@ class IRCBot:
 
 
     def send_server_status(self):
+        if '!server' in self.cache:
+            if time.time() - self.cache['!server']['time'] < 60:
+                self.send_msg('AHAH! I HAVE SPOKEN TO MY FRIEND THE SERVER RECENTLY')
+                self.send_msg('I REMEMBER WHAT SHE SAID:')
+                self.send_msg(self.cache['!server']['output'])
+                return
+
         self.send_msg('OKAY HUMAN, I WILL CHECK ON MY FRIEND THE SERVER')
         time.sleep(1)
         self.send_msg("HERE'S WHAT SHE SAID:")
-        self.send_msg(get_server_status())
+        server_status = get_server_status()
+        self.cache['!server'] = {'time': time.time(), 'output': server_status}
+        self.send_msg(server_status)
 
 
     def get_logname(self):
