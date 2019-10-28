@@ -38,7 +38,7 @@ class IRCBot:
 
     cache = dict()
 
-    def __init__(self, *, nick='CPE_Bot', port=None, host=None, server_cert_location=None, logging=True):
+    def __init__(self, *, nick='CPE_Bot', port=None, host=None, server_cert_location=None, logging=True, admins=[]):
         self.nick = nick
         self.port = port
         self.host = host
@@ -46,6 +46,7 @@ class IRCBot:
         self.sock = 0
         self.channel = None
         self.logging = logging
+        self.admins = admins
 
         if os.path.isfile(self.OPERCERT):
             with open(self.OPERCERT) as opcert:
@@ -340,6 +341,22 @@ class IRCBot:
             self.set_nick_afk(from_nick, reason=rest_of_message)
         elif command == 'server':
             self.send_server_status()
+        elif command == 'seppuku':
+            if from_nick not in self.admins:
+                self.dislike_user(from_nick)
+                self.chastise()
+            else:
+                self.send_msg('BYE FRIENDS.')
+                self.send_cmd(f'QUIT SEPPUKU\n')
+                exit(1)
+        elif command == 'restart':
+            if from_nick not in self.admins:
+                self.dislike_user(from_nick)
+                self.chastise()
+            else:
+                self.send_msg('I WILL BE RIGHT BACK')
+                self.send_cmd(f'QUIT RESTARTING\n')
+                exit(0)
         else:
             self.dislike_user(from_nick)
             self.chastise()
@@ -399,7 +416,7 @@ class IRCBot:
                 self.handle_message(line)
 
             
-bot = IRCBot(host='130.159.42.114', port=6697, server_cert_location='/home/chris/.irssi/server.cert.pem', nick='CPE_bot' if not '--testing' in sys.argv else 'PROTO_BOT')
+bot = IRCBot(host='130.159.42.114', port=6697, server_cert_location='/home/chris/.irssi/server.cert.pem', nick='CPE_bot' if not '--testing' in sys.argv else 'PROTO_BOT', admins=['chris'])
 bot.connect()
 bot.join_channel('#general' if '--testing' not in sys.argv else '#testing')
 bot.run()
