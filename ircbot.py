@@ -342,7 +342,7 @@ class IRCBot:
                 '\'!about\' -- bot will give some meta info about itself',
                 '\'!goodbooks\' -- bot will tell you how it feels about users it has interacted with',
                 '\'!afk [<reason>]\' -- tell bot you\'re going AFK, optionally why',
-                '\'!server\' -- check server status (CPU, RAM, processes/user)',
+                '\'!server [all]\' -- check server status (CPU, RAM, processes/user)',
                 '\'!help\' -- show this help'
             ]
             self.send_msg(message)
@@ -357,7 +357,7 @@ class IRCBot:
         elif command == 'afk':
             self.set_nick_afk(from_nick, reason=rest_of_message)
         elif command == 'server':
-            self.send_server_status()
+            self.send_server_status(rest_of_message and 'all' in rest_of_message)
         elif command == 'seppuku':
             if f'{from_nick}:{username}@{host}' not in self.admins:
                 self.dislike_user(from_nick)
@@ -387,8 +387,9 @@ class IRCBot:
         pass # TODO
 
 
-    def send_server_status(self):
-        if '!server' in self.cache:
+    def send_server_status(self, show_all=False):
+        cmd = "!server" if not show_all else "!server_all"
+        if cmd in self.cache:
             if time.time() - self.cache['!server']['time'] < 60:
                 self.send_msg('AHA! I HAVE SPOKEN TO MY FRIEND THE SERVER RECENTLY')
                 self.send_msg('I REMEMBER WHAT SHE SAID:')
@@ -398,8 +399,11 @@ class IRCBot:
         self.send_msg('OKAY HUMAN, I WILL CHECK ON MY FRIEND THE SERVER')
         time.sleep(1)
         self.send_msg("HERE'S WHAT SHE SAID:")
-        server_status = get_server_status()
-        self.cache['!server'] = {'time': time.time(), 'output': server_status}
+        kwargs = dict()
+        if show_all:
+            kwargs['trunc_perc'] = -1.0
+        server_status = get_server_status(**kwargs)
+        self.cache[cmd] = {'time': time.time(), 'output': server_status}
         self.send_msg(server_status)
 
 
@@ -434,6 +438,8 @@ class IRCBot:
 
 
 bot = IRCBot(json_path='settings.json')
+if '--testing' in sys.argv:
+    bot.nick = 'PROTO_BOT'
 bot.connect()
 bot.join_channel('#general' if '--testing' not in sys.argv else '#testing')
 bot.run()

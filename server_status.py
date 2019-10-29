@@ -3,9 +3,9 @@ from collections import defaultdict
 
 from runsh import runsh
 
-def get_server_status(ignored_users=['root', 'colord', 'uuidd', 'lp', 'syslog', 
-    'message+', 'lightdm', 'rtkit', 'avahi', 'daemon', 'systemd+'],
-        ignored_procs=[]#['sshd', 'systemd', '(sd-pam)']
+def get_server_status(
+        ignored_users=['root', 'colord', 'uuidd', 'lp', 'syslog', 'message+', 'lightdm', 'rtkit', 'avahi', 'daemon', 'systemd+'],
+        trunc_perc=0.5
         ):
 
     server_output = runsh("ssh chris@srv \"top -b -n 1\"")[:-1]
@@ -39,7 +39,6 @@ def get_server_status(ignored_users=['root', 'colord', 'uuidd', 'lp', 'syslog',
     for user, procs in user_commands.items():
         proc_count = len(procs)
         unique_procs = list(set(procs))
-        unique_procs = filter(lambda p: p not in ignored_procs, unique_procs)
 
         proc_count_cpu = [(uniq, procs.count(uniq), user_proc_cpu[user][uniq]) for uniq in unique_procs]
 
@@ -50,7 +49,7 @@ def get_server_status(ignored_users=['root', 'colord', 'uuidd', 'lp', 'syslog',
         user_cpu = sum([pcc[2] for pcc in proc_count_cpu])
 
         # trim out small usage (\leq .5%) processes
-        proc_count_cpu = list(filter(lambda r: r[2] > 0.5, proc_count_cpu))
+        proc_count_cpu = list(filter(lambda r: r[2] > trunc_perc, proc_count_cpu))
 
         table.append([f'{user}', f'{len(procs)}', f'{user_cpu:.1f}%', ' ['])
         for proc, count, __ in proc_count_cpu:
