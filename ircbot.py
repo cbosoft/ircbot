@@ -390,7 +390,7 @@ class IRCBot:
     def send_server_status(self):
         if '!server' in self.cache:
             if time.time() - self.cache['!server']['time'] < 60:
-                self.send_msg('AHAH! I HAVE SPOKEN TO MY FRIEND THE SERVER RECENTLY')
+                self.send_msg('AHA! I HAVE SPOKEN TO MY FRIEND THE SERVER RECENTLY')
                 self.send_msg('I REMEMBER WHAT SHE SAID:')
                 self.send_msg(self.cache['!server']['output'])
                 return
