@@ -38,15 +38,29 @@ class IRCBot:
 
     cache = dict()
 
-    def __init__(self, *, nick='CPE_Bot', port=None, host=None, server_cert_location=None, logging=True, admins=[]):
+    def __init__(self, *, nick='CPE_Bot', port=None, host=None, server_cert_location=None, logging=True, admins=[], json_path=None):
+
+        assert (port and host and server_cert_location) or json_path
+
         self.nick = nick
         self.port = port
         self.host = host
         self.server_cert_location = server_cert_location
-        self.sock = 0
-        self.channel = None
         self.logging = logging
         self.admins = admins
+        if json_path:
+            with open(json_path) as fp:
+                json_settings = json.load(fp)
+            safe_get = lambda k, d: json_settings[k] if k in json_settings else d
+            self.nick = safe_get('nick', self.nick)
+            self.port = safe_get('port', self.port)
+            self.host = safe_get('host', self.host)
+            self.server_cert_location = safe_get('server_cert_location', self.server_cert_location)
+            self.logging = safe_get('logging', self.logging)
+            self.admins = safe_get('admins', self.admins)
+
+        self.sock = 0
+        self.channel = None
 
         if os.path.isfile(self.OPERCERT):
             with open(self.OPERCERT) as opcert:
@@ -418,8 +432,8 @@ class IRCBot:
                 self.log(line)
                 self.handle_message(line)
 
-            
-bot = IRCBot(host='130.159.42.114', port=6697, server_cert_location='/home/chris/.irssi/server.cert.pem', nick='CPE_bot' if not '--testing' in sys.argv else 'PROTO_BOT', admins=['chris'])
+
+bot = IRCBot(json_path='settings.json')
 bot.connect()
 bot.join_channel('#general' if '--testing' not in sys.argv else '#testing')
 bot.run()
