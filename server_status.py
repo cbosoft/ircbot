@@ -64,8 +64,6 @@ def get_server_status(ignored_users=['root', 'colord', 'uuidd', 'lp', 'syslog',
             table[-1][-1] += '] '
 
     formatted_table = ['|  '.join([r.ljust(15) for r in row]) for row in table]
-    last_output = formatted_table
-    last_output_when = time.time()
     return formatted_table
 
 
