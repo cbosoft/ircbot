@@ -293,7 +293,7 @@ class IRCBot:
             self.handle_botcommand(message[1:], *user_info)
 
         for keyword in self.KEYWORDS:
-            if keyword in message.lower().split():
+            if keyword in re.split('[^\w]', message.lower()):
                 self.handle_botcommand(keyword, *user_info)
 
         mobj = self.TAGGED_RE.match(s)
