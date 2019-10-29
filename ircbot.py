@@ -23,7 +23,7 @@ class IRCBot:
     PING_RE = re.compile(r'^PING.*')
     ENDMOTD_RE = re.compile(r'.*:End of /MOTD.*')
     ENDJOIN_RE = re.compile(r'.*:End of /NAMES.*')
-    MESSAGE_RE = re.compile(r'^:(.*)!.*:(.*)')
+    MESSAGE_RE = re.compile(r'^:(.*)!(.*)@(.*) PRIVMSG #(.*) :(.*)')
     TAGGED_RE = re.compile(r'.*@([!\w]*).*')
 
     SOURCE = 'https://github.com/cbosoft/ircbot'
@@ -268,16 +268,19 @@ class IRCBot:
         if not mobj:
             return
 
-        from_nick, message = mobj.groups()
+        groups = mobj.groups()
+        user_info = groups[:-1]
+        message = groups[-1]
+        from_nick = user_info[0]
 
         print(f'{self} RECEIVED MESSAGE: {message} FROM {from_nick}')
 
         if message.startswith('!'):
-            self.handle_botcommand(message[1:], from_nick)
+            self.handle_botcommand(message[1:], *user_info)
 
         for keyword in self.KEYWORDS:
             if keyword in message.lower().split():
-                self.handle_botcommand(keyword, from_nick)
+                self.handle_botcommand(keyword, *user_info)
 
         mobj = self.TAGGED_RE.match(s)
         if mobj:
@@ -294,7 +297,7 @@ class IRCBot:
             self.send_msg(f'I {est} {user.upper()} ({level})')
 
 
-    def handle_botcommand(self, command, from_nick):
+    def handle_botcommand(self, command, from_nick, username, host, channel):
         
         command = command.lower()
 
@@ -342,7 +345,7 @@ class IRCBot:
         elif command == 'server':
             self.send_server_status()
         elif command == 'seppuku':
-            if from_nick not in self.admins:
+            if f'{from_nick}:{username}@{host}' not in self.admins:
                 self.dislike_user(from_nick)
                 self.chastise()
             else:
@@ -350,7 +353,7 @@ class IRCBot:
                 self.send_cmd(f'QUIT SEPPUKU\n')
                 exit(1)
         elif command == 'restart':
-            if from_nick not in self.admins:
+            if f'{from_nick}:{username}@{host}' not in self.admins:
                 self.dislike_user(from_nick)
                 self.chastise()
             else:
