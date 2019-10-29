@@ -1,0 +1,9 @@
+{        
+  "host": "192.168.1.1", 
+  "port" : 6697, 
+  "server_cert_location": "/path/to/server.cert.pem",
+  "nick": "bot", 
+  "admins": [
+    "nick:user@host_domain_or_ip"
+  ]
+}
