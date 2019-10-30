@@ -364,6 +364,8 @@ class IRCBot:
             self.set_nick_afk(from_nick, reason=rest_of_message)
         elif command == 'server':
             self.send_server_status(rest_of_message and 'all' in rest_of_message)
+        elif command == 'search' and rest_of_message:
+            self.search(rest_of_message)
         elif command == 'seppuku':
             if f'{from_nick}:{username}@{host}' not in self.admins:
                 self.dislike_user(from_nick)
