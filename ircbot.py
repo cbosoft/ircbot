@@ -13,6 +13,7 @@ from collections import defaultdict
 
 from runsh import runsh
 from server_status import get_server_status
+from search import search
 
 
 
@@ -345,6 +346,7 @@ class IRCBot:
                 '\'!goodbooks\' -- bot will tell you how it feels about users it has interacted with',
                 '\'!afk [<reason>]\' -- tell bot you\'re going AFK, optionally why',
                 '\'!server [all]\' -- check server status (CPU, RAM, processes/user)',
+                '\'!search [query]\' -- search the internet and return the top three results',
                 '\'!help\' -- show this help'
             ]
             self.send_msg(message)
@@ -381,8 +383,21 @@ class IRCBot:
             self.chastise()
 
 
-    def google(self, query):
-        pass # TODO
+    def search(self, query):
+        cmd = f'search {query}'
+        if cmd in self.cache:
+            if time.time() - self.cache[cmd]['time'] < (60*60):
+                self.send_msg('OOH I HAVE LOOKED THIS UP BEFORE!')
+                self.send_msg('HERE IS WHAT I REMEMBER:')
+                self.send_msg(' ')
+                self.send_msg(self.cache[cmd]['output'])
+
+        self.send_msg('OKAY {random.choice(self.phrase_book["person"])}, I WILL SEARCH THAT FOR YOU.')
+        time.sleep(0.5)
+        res = search(query)
+        self.cache[cmd] = { 'time': time.time(), 'output': res }
+        self.send_msg('RESULTS:')
+        self.send_msg(res)
 
 
     def wiki(self, query):
