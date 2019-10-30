@@ -26,11 +26,10 @@ def search(query, n=3):
 
         rv.extend([
             f'┌ {title} ({link})',
-            f'└ {snippet}'
+            f'└ {snippet}',
+            ' '
         ])
-        if i < n:
-            rv.append(' ')
-    return rv
+    return rv[:-1]
 
 
 if __name__ == "__main__":
