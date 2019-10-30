@@ -177,7 +177,9 @@ class IRCBot:
 
     def send_phrase(self, phrase_type):
         if phrase_type not in self.phrase_book:
-            return '...'
+            self.send_msg('...')
+
+        time.sleep(random.random()*0.5)
 
         self.send_msg(random.choice(self.phrase_book[phrase_type]))
 
