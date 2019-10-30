@@ -340,7 +340,7 @@ class IRCBot:
             self.send_msg(about)
         elif command == 'help':
             message = [
-                'YOU WANT HELP, {random.choice(self.phrase_book["people"])}? OK:',
+                f'YOU WANT HELP, {random.choice(self.phrase_book["people"])}? OK:',
                 'Commands:',
                 '\'!hello\' -- bot will respond with greeting',
                 '\'!fortune\' -- bot will respond with a message/quote',
@@ -369,7 +369,7 @@ class IRCBot:
                 self.dislike_user(from_nick)
                 self.chastise()
             else:
-                self.send_msg('BYE {random.choice(self.phrase_book["people"])}.')
+                self.send_msg(f'BYE {random.choice(self.phrase_book["people"])}.')
                 self.send_cmd(f'QUIT SEPPUKU\n')
                 exit(1)
         elif command == 'restart':
@@ -394,7 +394,7 @@ class IRCBot:
                 self.send_msg(' ')
                 self.send_msg(self.cache[cmd]['output'])
 
-        self.send_msg('OKAY {random.choice(self.phrase_book["person"])}, I WILL SEARCH THAT FOR YOU.')
+        self.send_msg(f'OKAY {random.choice(self.phrase_book["person"])}, I WILL SEARCH THAT FOR YOU.')
         time.sleep(0.5)
         res = search(query)
         self.cache[cmd] = { 'time': time.time(), 'output': res }
@@ -415,7 +415,7 @@ class IRCBot:
                 self.send_msg(self.cache[cmd]['output'])
                 return
 
-        self.send_msg('OKAY {random.choice(self.phrase_book["person"])}, I WILL CHECK ON MY FRIEND THE SERVER')
+        self.send_msg(f'OKAY {random.choice(self.phrase_book["person"])}, I WILL CHECK ON MY FRIEND THE SERVER')
         time.sleep(1)
         self.send_msg("HERE'S WHAT SHE SAID:")
         kwargs = dict()
