@@ -209,6 +209,7 @@ class IRCBot:
                 'reason'   : reason
             }
         self.send_msg(f'{nick} is now AFK because "{reason}".')
+        # TODO: save AFK status to file
         
 
 
@@ -229,6 +230,7 @@ class IRCBot:
             self.send_msg(s, to=nick)
 
         del self.afk_users[nick]
+        # TODO: save AFK status to file
 
 
     def check_afk(self, from_nick, to_nick, message):
