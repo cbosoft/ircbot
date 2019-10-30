@@ -407,10 +407,10 @@ class IRCBot:
     def send_server_status(self, show_all=False):
         cmd = "!server" if not show_all else "!server_all"
         if cmd in self.cache:
-            if time.time() - self.cache['!server']['time'] < 60:
+            if time.time() - self.cache[cmd]['time'] < 60:
                 self.send_msg('AHA! I HAVE SPOKEN TO MY FRIEND THE SERVER RECENTLY')
                 self.send_msg('I REMEMBER WHAT SHE SAID:')
-                self.send_msg(self.cache['!server']['output'])
+                self.send_msg(self.cache[cmd]['output'])
                 return
 
         self.send_msg('OKAY {random.choice(self.phrase_book["person"])}, I WILL CHECK ON MY FRIEND THE SERVER')
