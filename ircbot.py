@@ -13,6 +13,7 @@ from collections import defaultdict
 
 from runsh import runsh
 from server_status import get_server_status
+from search import search
 
 
 
@@ -339,7 +340,7 @@ class IRCBot:
             self.send_msg(about)
         elif command == 'help':
             message = [
-                'HELP HUMAN? OK:',
+                'YOU WANT HELP, {random.choice(self.phrase_book["people"])}? OK:',
                 'Commands:',
                 '\'!hello\' -- bot will respond with greeting',
                 '\'!fortune\' -- bot will respond with a message/quote',
@@ -347,6 +348,7 @@ class IRCBot:
                 '\'!goodbooks\' -- bot will tell you how it feels about users it has interacted with',
                 '\'!afk [<reason>]\' -- tell bot you\'re going AFK, optionally why',
                 '\'!server [all]\' -- check server status (CPU, RAM, processes/user)',
+                '\'!search [query]\' -- search the internet and return the top three results',
                 '\'!help\' -- show this help'
             ]
             self.send_msg(message)
@@ -367,7 +369,7 @@ class IRCBot:
                 self.dislike_user(from_nick)
                 self.chastise()
             else:
-                self.send_msg('BYE FRIENDS.')
+                self.send_msg('BYE {random.choice(self.phrase_book["people"])}.')
                 self.send_cmd(f'QUIT SEPPUKU\n')
                 exit(1)
         elif command == 'restart':
@@ -383,8 +385,21 @@ class IRCBot:
             self.chastise()
 
 
-    def google(self, query):
-        pass # TODO
+    def search(self, query):
+        cmd = f'search {query}'
+        if cmd in self.cache:
+            if time.time() - self.cache[cmd]['time'] < (60*60):
+                self.send_msg('OOH I HAVE LOOKED THIS UP BEFORE!')
+                self.send_msg('HERE IS WHAT I REMEMBER:')
+                self.send_msg(' ')
+                self.send_msg(self.cache[cmd]['output'])
+
+        self.send_msg('OKAY {random.choice(self.phrase_book["person"])}, I WILL SEARCH THAT FOR YOU.')
+        time.sleep(0.5)
+        res = search(query)
+        self.cache[cmd] = { 'time': time.time(), 'output': res }
+        self.send_msg('RESULTS:')
+        self.send_msg(res)
 
 
     def wiki(self, query):
@@ -394,13 +409,13 @@ class IRCBot:
     def send_server_status(self, show_all=False):
         cmd = "!server" if not show_all else "!server_all"
         if cmd in self.cache:
-            if time.time() - self.cache['!server']['time'] < 60:
+            if time.time() - self.cache[cmd]['time'] < 60:
                 self.send_msg('AHA! I HAVE SPOKEN TO MY FRIEND THE SERVER RECENTLY')
                 self.send_msg('I REMEMBER WHAT SHE SAID:')
-                self.send_msg(self.cache['!server']['output'])
+                self.send_msg(self.cache[cmd]['output'])
                 return
 
-        self.send_msg('OKAY HUMAN, I WILL CHECK ON MY FRIEND THE SERVER')
+        self.send_msg('OKAY {random.choice(self.phrase_book["person"])}, I WILL CHECK ON MY FRIEND THE SERVER')
         time.sleep(1)
         self.send_msg("HERE'S WHAT SHE SAID:")
         kwargs = dict()
