@@ -15,7 +15,7 @@ def search(query, n=3):
     bs = BS(resp.content, features='lxml')
     for i, res in enumerate(bs.find_all('div', attrs={'class':'result'})):
 
-        if i > n:
+        if i > (n-1):
             break
 
         title = res.find(attrs={'class':'result__title'}).getText().strip()
