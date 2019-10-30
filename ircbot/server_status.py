@@ -3,7 +3,26 @@ from collections import defaultdict
 
 from runsh import runsh
 
-def get_server_status(
+def get_server_status(bot, command, rest_of_message, *args):
+    cmd = "!server" if not show_all else "!server_all"
+    if cmd in bot.cache:
+        if time.time() - bot.cache[cmd]['time'] < 60:
+            bot.send_msg('AHA! I HAVE SPOKEN TO MY FRIEND THE SERVER RECENTLY')
+            bot.send_msg('I REMEMBER WHAT SHE SAID:')
+            bot.send_msg(bot.cache[cmd]['output'])
+            return
+
+    bot.send_msg(f'OKAY {random.choice(bot.phrase_book["person"])}, I WILL CHECK ON MY FRIEND THE SERVER')
+    time.sleep(1)
+    bot.send_msg("HERE'S WHAT SHE SAID:")
+    kwargs = dict()
+    if show_all:
+        kwargs['trunc_perc'] = -1.0
+    server_status = _get_server_status(**kwargs)
+    bot.cache[cmd] = {'time': time.time(), 'output': server_status}
+    bot.send_msg(server_status)
+
+def _get_server_status(
         ignored_users=['root', 'colord', 'uuidd', 'lp', 'syslog', 'message+', 'lightdm', 'rtkit', 'avahi', 'daemon', 'systemd+'],
         trunc_perc=0.5
         ):
