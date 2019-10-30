@@ -348,7 +348,7 @@ class IRCBot:
                 '\'!goodbooks\' -- bot will tell you how it feels about users it has interacted with',
                 '\'!afk [<reason>]\' -- tell bot you\'re going AFK, optionally why',
                 '\'!server [all]\' -- check server status (CPU, RAM, processes/user)',
-                '\'!search [query]\' -- search the internet and return the top three results',
+                '\'!search <query>\' -- search the internet and return the top three results',
                 '\'!help\' -- show this help'
             ]
             self.send_msg(message)
