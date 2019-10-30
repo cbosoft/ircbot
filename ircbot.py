@@ -338,7 +338,7 @@ class IRCBot:
             self.send_msg(about)
         elif command == 'help':
             message = [
-                'HELP HUMAN? OK:',
+                'YOU WANT HELP, {random.choice(self.phrase_book["people"])}? OK:',
                 'Commands:',
                 '\'!hello\' -- bot will respond with greeting',
                 '\'!fortune\' -- bot will respond with a message/quote',
@@ -367,7 +367,7 @@ class IRCBot:
                 self.dislike_user(from_nick)
                 self.chastise()
             else:
-                self.send_msg('BYE FRIENDS.')
+                self.send_msg('BYE {random.choice(self.phrase_book["people"])}.')
                 self.send_cmd(f'QUIT SEPPUKU\n')
                 exit(1)
         elif command == 'restart':
@@ -413,7 +413,7 @@ class IRCBot:
                 self.send_msg(self.cache['!server']['output'])
                 return
 
-        self.send_msg('OKAY HUMAN, I WILL CHECK ON MY FRIEND THE SERVER')
+        self.send_msg('OKAY {random.choice(self.phrase_book["person"])}, I WILL CHECK ON MY FRIEND THE SERVER')
         time.sleep(1)
         self.send_msg("HERE'S WHAT SHE SAID:")
         kwargs = dict()
