@@ -1,7 +1,7 @@
 import random
 
-from phrases import chastise
-from goodbooks import dislike_user
+from ircbot.phrases import chastise
+from ircbot.goodbooks import dislike_user
 
 
 def is_admin(bot, from_nick, username, hostname):

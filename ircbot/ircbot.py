@@ -11,17 +11,17 @@ import os
 import json
 from collections import defaultdict
 
-from runsh import runsh
-from server_status import get_server_status
-from search import search
-from show_help import show_help
-from fortune import fortune
-from info import about
-from phrases import send_phrase, greet, chastise, kw_coffee, kw_tea
-from goodbooks import read_goodbooks, show_goodbooks, dislike_user
-from afk import set_nick_afk, return_from_afk, check_afk
-from admin import seppuku, restart
-from log import log
+from ircbot.runsh import runsh
+from ircbot.server_status import get_server_status
+from ircbot.search import search
+from ircbot.show_help import show_help
+from ircbot.fortune import fortune
+from ircbot.info import about
+from ircbot.phrases import send_phrase, greet, chastise, kw_coffee, kw_tea
+from ircbot.goodbooks import read_goodbooks, show_goodbooks, dislike_user
+from ircbot.afk import set_nick_afk, return_from_afk, check_afk
+from ircbot.admin import seppuku, restart
+from ircbot.log import log
 
 
 
@@ -47,7 +47,15 @@ class IRCBot:
 
     cache = dict()
 
-    def __init__(self, *, nick='CPE_Bot', port=None, host=None, server_cert_location=None, logging=True, admins=[], json_path=None, commands=None):
+    def __init__(self, *, 
+            nick='CPE_Bot', 
+            port=None, 
+            host=None, 
+            server_cert_location=None, 
+            logging=True, 
+            admins=[], 
+            json_path=None, 
+            commands=None):
 
         assert (port and host and server_cert_location) or json_path
 
@@ -90,6 +98,7 @@ class IRCBot:
         read_goodbooks(self)
 
         self.commands = commands
+        print(commands)
 
     def __repr__(self):
         return f'IRCBot(nick={self.nick}, port={self.port}, host={self.host})'
@@ -233,7 +242,7 @@ class IRCBot:
 
         self.esteem[from_nick]
 
-        if command in self.commands:
+        if self.commands and command in self.commands:
             self.commands[command]['func'](self, rest_of_message, from_nick, *args)
         else:
             dislike_user(self, from_nick)
@@ -254,11 +263,3 @@ class IRCBot:
             for line in lines:
                 log(self, line)
                 self.handle_message(line)
-
-
-bot = IRCBot(json_path='settings.json')
-if '--testing' in sys.argv:
-    bot.nick = 'PROTO_BOT'
-bot.connect()
-bot.join_channel('#general' if '--testing' not in sys.argv else '#testing')
-bot.run()

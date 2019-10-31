@@ -1,4 +1,4 @@
-from runsh import runsh
+from ircbot.runsh import runsh
 
 def fortune(bot, *args):
     fortune = runsh('fortune news')

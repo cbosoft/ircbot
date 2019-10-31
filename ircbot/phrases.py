@@ -1,3 +1,6 @@
+import random
+
+
 def send_phrase(self, phrase_type):
 
     if phrase_type not in self.phrase_book:

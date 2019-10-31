@@ -25,7 +25,7 @@ from ircbot.admin import seppuku, restart
 from ircbot.log import log
 
 
-bot = IRCBot(json_path='settings.json', commands={
+commands={
     'help': {
         'doc': '\'!help\' --- show this help message.', 
         'func': show_help
@@ -61,9 +61,18 @@ bot = IRCBot(json_path='settings.json', commands={
     },
     'restart': {
         'func': restart
+    },
+    'server': {
+        'doc': '\'!server [all]\' --- poll the server for running processes',
+        'func': get_server_status
+    },
+    'about': {
+        'doc': '\'!about\' --- get some information about the bot',
+        'func': about
     }
-})
+}
 
+bot = IRCBot(json_path='settings.json', commands=commands)
 if '--testing' in sys.argv:
     bot.nick = 'PROTO_BOT'
 bot.connect()

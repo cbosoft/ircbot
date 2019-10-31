@@ -1,9 +1,14 @@
+import time
 import subprocess as sp
 from collections import defaultdict
+import random
 
-from runsh import runsh
+from ircbot.runsh import runsh
 
-def get_server_status(bot, command, rest_of_message, *args):
+
+def get_server_status(bot, rest_of_message, *args):
+    show_all = rest_of_message == 'all'
+    print(rest_of_message)
     cmd = "!server" if not show_all else "!server_all"
     if cmd in bot.cache:
         if time.time() - bot.cache[cmd]['time'] < 60:
@@ -21,6 +26,7 @@ def get_server_status(bot, command, rest_of_message, *args):
     server_status = _get_server_status(**kwargs)
     bot.cache[cmd] = {'time': time.time(), 'output': server_status}
     bot.send_msg(server_status)
+
 
 def _get_server_status(
         ignored_users=['root', 'colord', 'uuidd', 'lp', 'syslog', 'message+', 'lightdm', 'rtkit', 'avahi', 'daemon', 'systemd+'],
@@ -89,5 +95,5 @@ def _get_server_status(
 
 
 if __name__ == "__main__":
-    for line in get_server_status():
+    for line in _get_server_status():
         print(line)
