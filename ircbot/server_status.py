@@ -79,7 +79,7 @@ def _get_server_status(
         # trim out small usage (\leq .5%) processes
         proc_count_cpu = list(filter(lambda r: r[2] > trunc_perc, proc_count_cpu))
 
-        table.append([f'{user}', f'{len(procs)}', f'{user_cpu:.1f}%', f'{user_ram:.1f}', ' ['])
+        table.append([f'{user}', f'{len(procs)}', f'{user_cpu:.1f}%', f'{user_ram:.1f}%', ' ['])
         for proc, count, __, __ in proc_count_cpu:
             if count > 1:
                 table[-1][-1] += f'{count}×'
