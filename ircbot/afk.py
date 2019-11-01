@@ -1,3 +1,5 @@
+import datetime
+
 def set_nick_afk(bot, reason, nick, *args):
     '''Set nick as being away, log time this happened'''
     t = datetime.datetime.now().strftime("%m-%d, %H:%M:%S")
