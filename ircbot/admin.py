@@ -8,7 +8,7 @@ def is_admin(bot, from_nick, username, hostname):
     return f'{from_nick}:{username}@{hostname}' in bot.admins
 
 
-def seppuku(bot, rest_of_message, from_nick, username, hostname):
+def seppuku(bot, rest_of_message, from_nick, username, hostname, *args):
     if is_admin(bot, from_nick, username, hostname):
         dislike_user(bot, from_nick)
         chastise(bot)
@@ -18,7 +18,7 @@ def seppuku(bot, rest_of_message, from_nick, username, hostname):
         exit(1)
 
 
-def restart(bot, rest_of_message, from_nick, username, hostname):
+def restart(bot, rest_of_message, from_nick, username, hostname, *args):
     if is_admin(bot, from_nick, username, hostname):
         dislike_user(bot, from_nick)
         chastise(bot)
