@@ -3,3 +3,4 @@ def about(bot, *args):
         '<!-- ircbot -->', 
         f'see github for source: {bot.SOURCE}'
     ])
+    return 0

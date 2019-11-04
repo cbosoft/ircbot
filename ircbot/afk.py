@@ -9,7 +9,10 @@ def set_nick_afk(bot, reason, nick, *args):
             'reason'   : reason
         }
     bot.send_msg(f'{nick} is now AFK because "{reason}".')
+    
     # TODO: save AFK status to file
+    
+    return 0
 
 
 def return_from_afk(bot, nick):
@@ -29,7 +32,10 @@ def return_from_afk(bot, nick):
         bot.send_msg(s, to=nick)
 
     del bot.afk_users[nick]
+    
     # TODO: save AFK status to file
+
+    return 0
 
 
 def check_afk(bot, from_nick, to_nick, message):
@@ -40,7 +46,7 @@ def check_afk(bot, from_nick, to_nick, message):
     '''
 
     if to_nick not in bot.afk_users:
-        return
+        return 0
     
     since = bot.afk_users[to_nick]["timestamp"]
     reason = bot.afk_users[to_nick]["reason"]
@@ -51,3 +57,5 @@ def check_afk(bot, from_nick, to_nick, message):
     t = datetime.datetime.now().strftime("%m-%d, %H:%M:%S")
     savemsg = f'{t} {from_nick}: {message}'
     bot.afk_users[to_nick]['messages'].append(savemsg)
+
+    return 0

@@ -32,7 +32,7 @@ class IRCBot:
     PING_RE = re.compile(r'^PING.*')
     ENDMOTD_RE = re.compile(r'.*:End of /MOTD.*')
     ENDJOIN_RE = re.compile(r'.*:End of /NAMES.*')
-    MESSAGE_RE = re.compile(r'^:(.*)!(.*)@(.*) PRIVMSG #(.*) :(.*)')
+    MESSAGE_RE = re.compile(r'^:(.+)!(.+)@(.+) PRIVMSG #(.+) :(.+)')
     TAGGED_RE = re.compile(r'.*@([!\w]*).*')
 
     SOURCE = 'https://github.com/cbosoft/ircbot'
@@ -44,6 +44,7 @@ class IRCBot:
     phrase_book = dict()
     afk_users   = dict()
     esteem = defaultdict(int)
+    error = None
 
     cache = dict()
 
@@ -190,19 +191,20 @@ class IRCBot:
 
         s = s.strip()
 
-        print(s)
+        print(f'Handling message: {s}')
         
         if self.ERROR_RE.match(s):
             raise Exception(f'Something went wrong:\n{s}')
         
         if self.PING_RE.match(s):
             self.send_cmd(s.replace('PING', 'PONG'))
-            return
+            return 0
         
         mobj = self.MESSAGE_RE.match(s)
 
         if not mobj:
-            return
+            print('non-matching string')
+            return 0
 
         groups = mobj.groups()
         user_info = groups[:-1]
@@ -243,10 +245,16 @@ class IRCBot:
         self.esteem[from_nick]
 
         if self.commands and command in self.commands:
-            self.commands[command]['func'](self, rest_of_message, from_nick, *args)
+            try:
+                rv = self.commands[command]['func'](self, rest_of_message, from_nick, *args)
+            except Exception as e:
+                self.error = e
+                rv = 1
         else:
             dislike_user(self, from_nick)
             chastise(self)
+            rv = 0
+        return rv
 
 
     def run(self):
@@ -262,4 +270,8 @@ class IRCBot:
     
             for line in lines:
                 log(self, line)
-                self.handle_message(line)
+                try:
+                    self.handle_message(line)
+                except Exception as e:
+                    print(e)
+                    send_phrase(self, 'error')

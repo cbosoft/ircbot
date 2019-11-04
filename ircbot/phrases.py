@@ -10,18 +10,18 @@ def send_phrase(self, phrase_type):
 
 
 def greet(bot, *args):
-    send_phrase(bot, 'greetings')
+    return send_phrase(bot, 'greetings')
 
 
 def chastise(bot, *args):
     '''Chastise the user for wrong-doing'''
-    send_phrase(bot, 'chastisations')
+    return send_phrase(bot, 'chastisations')
 
 
 def kw_coffee(bot, *args):
-    send_phrase(bot, 'coffee')
+    return send_phrase(bot, 'coffee')
 
 
 def kw_tea(bot, *args):
-    send_phrase(bot, 'tea')
+    return send_phrase(bot, 'tea')
 

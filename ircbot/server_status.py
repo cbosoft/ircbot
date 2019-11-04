@@ -23,9 +23,15 @@ def get_server_status(bot, rest_of_message, *args):
     kwargs = dict()
     if show_all:
         kwargs['trunc_perc'] = -1.0
-    server_status = _get_server_status(**kwargs)
+
+    try:
+        server_status = _get_server_status(**kwargs)
+    except Exception:
+        bot.send_msg('SHE\'s NOT SPEAKING TO ME RIGHT NOW, #SADFACE')
+        return 1
     bot.cache[cmd] = {'time': time.time(), 'output': server_status}
     bot.send_msg(server_status)
+    return 0
 
 
 def _get_server_status(
