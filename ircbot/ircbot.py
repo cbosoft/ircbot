@@ -236,10 +236,6 @@ class IRCBot:
             return_from_afk(self, from_nick)
 
 
-    def is_admin(self, from_nick, username, host):
-        return f'{from_nick}:{username}@{host}' in self.admins
-
-
     def handle_botcommand(self, command, rest_of_message, from_nick, *args):
 
         self.esteem[from_nick]
