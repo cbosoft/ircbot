@@ -23,6 +23,7 @@ from ircbot.goodbooks import read_goodbooks, show_goodbooks, dislike_user
 from ircbot.afk import set_nick_afk, return_from_afk, check_afk
 from ircbot.admin import seppuku, restart
 from ircbot.log import log
+from ircbot.test import run_tests
 
 
 commands={
@@ -77,4 +78,8 @@ if '--testing' in sys.argv:
     bot.nick = 'PROTO_BOT'
 bot.connect()
 bot.join_channel('#general' if '--testing' not in sys.argv else '#testing')
-bot.run()
+
+if '--run-tests' in sys.argv:
+    run_tests(bot)
+else:
+    bot.run()
