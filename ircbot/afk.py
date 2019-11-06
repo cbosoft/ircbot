@@ -51,7 +51,7 @@ def check_afk(bot, from_nick, to_nick, message):
     since = bot.afk_users[to_nick]["timestamp"]
     reason = bot.afk_users[to_nick]["reason"]
     msg = f'@{from_nick.upper()}, {to_nick.upper()} HAS BEEN AFK SINCE {since}'
-    if reason: msg += ' because {reason}'
+    if reason: msg += f' because {reason}'
     msg += '. I WILL RELAY YOUR MESSAGE WHEN THEY RETURN.'
     bot.send_msg(msg)
     t = datetime.datetime.now().strftime("%m-%d, %H:%M:%S")
