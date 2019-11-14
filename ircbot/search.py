@@ -1,5 +1,7 @@
 import re
 import requests
+import time
+
 from bs4 import BeautifulSoup as BS
 import urllib.parse as urlparse
 import random
@@ -47,10 +49,3 @@ def search(bot, query, *args):
     bot.cache[cmd] = { 'time': time.time(), 'output': rv }
     bot.send_msg('RESULTS:')
     bot.send_msg(rv)
-
-
-if __name__ == "__main__":
-    results = search('foo')
-
-    for line in results:
-        print(line)
