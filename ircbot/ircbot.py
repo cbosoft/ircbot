@@ -118,13 +118,20 @@ class IRCBot:
         self.sock.connect((self.host, self.port))
         self.send_cmd(f'NICK {self.nick}\n')
         self.send_cmd(f'USER {self.nick} 0 * :bot\n')
+        connected = False
 
-        while True:
+        while not connected:
             s = self.sock.recv(2048)
             s = s.decode().strip('\n\r')
-            self.handle_message(s)
-            if self.ENDMOTD_RE.match(s):
-                break
+            lines = s.split('\n')
+
+            for line in lines:
+                # while waiting for connection, respond to PING requests
+                if self.PING_RE.match(line):
+                    self.send_cmd(line.replace('PING', 'PONG'))
+                elif self.ENDMOTD_RE.match(line):
+                    connected = True
+                    break
             
         print(f'{self} HAS CONNECTED')
 
