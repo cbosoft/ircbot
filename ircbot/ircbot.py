@@ -96,9 +96,7 @@ class IRCBot:
             print(f'{self} COULD NOT FIND PHRASEBOOK {self.PHRASE_BOOK_DIR}')
 
         read_goodbooks(self)
-
         self.commands = commands
-        print(commands)
 
     def __repr__(self):
         return f'IRCBot(nick={self.nick}, port={self.port}, host={self.host})'
