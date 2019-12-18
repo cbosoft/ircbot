@@ -108,11 +108,12 @@ class IRCBot:
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        if self.server_cert_location:
-            print(f'{self} USING SSL')
-            self.sslcontext = ssl.SSLContext()
-            self.sslcontext.load_verify_locations(self.server_cert_location)
-            self.sock = self.sslcontext.wrap_socket(self.sock, server_hostname=self.host)
+        # disabled SSL connection
+        # if self.server_cert_location:
+        #     print(f'{self} USING SSL')
+        #     self.sslcontext = ssl.SSLContext()
+        #     self.sslcontext.load_verify_locations(self.server_cert_location)
+        #     self.sock = self.sslcontext.wrap_socket(self.sock, server_hostname=self.host)
 
         self.sock.connect((self.host, self.port))
         self.send_cmd(f'NICK {self.nick}\n')
