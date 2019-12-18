@@ -39,7 +39,6 @@ class IRCBot:
     OPERCERT = '.operator.cert'
     PHRASE_BOOK_DIR = './phrase_book'
     ESTEEM_FILE = os.path.expanduser('~/.ircbot_esteem.json')
-    KEYWORDS = ['coffee', 'tea']
 
     phrase_book = dict()
     afk_users   = dict()
@@ -222,10 +221,6 @@ class IRCBot:
                 rest_of_message = None
 
             self.handle_botcommand(command, rest_of_message, *user_info)
-
-        for keyword in self.KEYWORDS:
-            if keyword in re.split('[^\w]', message.lower()):
-                self.handle_botcommand(keyword, None, *user_info)
 
         mobj = self.TAGGED_RE.match(s)
         if mobj:
