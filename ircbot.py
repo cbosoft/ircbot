@@ -24,6 +24,7 @@ from ircbot.afk import set_nick_afk, return_from_afk, check_afk
 from ircbot.admin import seppuku, restart
 from ircbot.log import log
 from ircbot.test import run_tests
+from ircbot.tumbleweed import tumbleweed
 
 
 commands={
@@ -66,6 +67,10 @@ commands={
     'server': {
         'doc': '\'!server [all]\' --- poll the server for running processes',
         'func': get_server_status
+    },
+    'tumbleweed': {
+        'doc': '\'!tumbleweed\' --- run some tumbleweed accross the chat',
+        'func': tumbleweed
     },
     'about': {
         'doc': '\'!about\' --- get some information about the bot',
